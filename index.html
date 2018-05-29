@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-layout-component@4.2/dist/aframe-layout-component.min.js"></script>
+    <script src="../aframe-spe-particles-component/dist/aframe-spe-particles-component.js"></script>
+    <script src="aframe-randomize-component.js"></script>
+  </head>
+  <body>
+    <a-scene background="color:black">
+      <template id="boxTemplate">
+        <a-box scale=".1 .1 .1"></a-box>
+      </template>
+      <a-assets>
+        <a-mixin id="label" text="align: center; width: 10" position="0 -3 0"></a-mixin>
+      </a-assets>
+      <a-entity position="-3 1 -20" layout="type: box; margin: 6; columns: 5">
+        <a-entity randomize="_target:a-box; position:-2 -2 -5..2 2 -7; material.color:red..green; scale: 1 1 1|1.5 1.5 1.5|2 2 2;">
+          <a-box></a-box>
+          <a-box></a-box>
+          <a-box></a-box>
+          <a-text value="children color,size,scale" mixin="label"></a-text>
+        </a-entity>
+        <a-entity>
+          <a-box randomize="rotation:0 0 0...360 360 360; width:1|2|3; height:1..2; color:blue|green|red|white"></a-box>
+          <a-text value="self color, rotation" mixin="label"></a-text>
+        </a-entity>
+        <a-entity>
+          <a-box randomize="_seed:283748327; material.color:yellow..red"></a-box>
+          <a-text value="self color, fixed seed" mixin="label"></a-text>
+        </a-entity>
+        <a-entity id="adding" randomize="_target:a-box; position:-2 -2 -2..2 2 2; rotation:0 0 0..360 360 360">
+          <a-text value="position & rotate new children" mixin="label"></a-text>
+        </a-entity>
+      </a-entity>
+    </a-scene>
+    <script>
+      let boxTemplate = document.getElementById("boxTemplate")
+      let adding = document.getElementById("adding")
+      function spawn() {
+        let clone = document.importNode(boxTemplate.content, true)
+        adding.appendChild(clone)
+        setTimeout(spawn, 2000)
+      }
+      spawn()
+    </script>
+  </body>
+</html>
