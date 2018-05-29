@@ -1,3 +1,4 @@
+// Copyright 2018 harlyq, ISC license
 (function (AFRAME) {
   const RES = 4
   const identityFn = e => e
