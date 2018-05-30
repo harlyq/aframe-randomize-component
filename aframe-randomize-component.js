@@ -10,11 +10,6 @@
       default: -1,
       /*#if dev*/description: "random seed for the randomizer, set to -1 re-randomize each time",/*#endif*/
     },
-
-    // "_target": {
-    //   default: "",
-    //   /*#if dev*/description: "selector for children to randomize. use an empty string for self (default), * for all children, or any other type of css selector",/*#endif*/
-    // }
   }
   
   AFRAME.registerComponent('randomize', {
@@ -33,13 +28,9 @@
       this.randColor = this.randColor.bind(this)
       this.randSeed = 1234567 // current seed
       this.lastSeed = this.randSeed // last seed from data
-      // this.processedElements = []
-      // this.mutationObserver = new MutationObserver(this.childrenMutated.bind(this))
     },
   
     updateSchema: function(newData) {
-      // console.log("New Data", newData)
-  
       if (Object.keys(newData).every(x => isNaN(x))) {
         let newSchema = Object.assign({}, this.schema)
   
@@ -74,25 +65,9 @@
         this.lasSeed = this.randSeed
       }
 
-      // this.processedElements = []
-      // this.mutationObserver.disconnect() // will be connected later if we randomize children
-
-      // if (this.data._target === "") {
-        this.randomizeEntity(this.el)
-      // } else {
-      //   this.randomizeChildren()
-      //   this.mutationObserver.observe(this.el, {childList: true})
-      // }
+      this.randomizeEntity(this.el)
     },
 
-    // childrenMutated: function(mutationsList) {
-    //   for (let mutation of mutationsList) {
-    //     if (mutation.type === "childList") {
-    //       this.randomizeChildren()
-    //     }
-    //   }
-    // },
-  
     random: function() {
       if (this.randSeed < 0) {
         return Math.random()
@@ -106,21 +81,6 @@
       return this.random()*(max - min) + min
     },
   
-    // randomizeChildren: function() {
-    //   const data = this.data
-    //   this.resetSelectsOnNextSelect = true
-  
-    //   // TODO manage selects
-    //   for (let i = 0, n = this.el.children.length; i < n; i++) {
-    //     let entity = this.el.children[i]
-
-    //     if (!this.processedElements.includes(entity) && entity.matches(data._target)) {
-    //       this.randomizeEntity(entity)
-    //       this.processedElements.push(entity)
-    //     }
-    //   }
-    // },
-
     randomizeEntity: function(entity) {
       for (let prop in this.schema) {
         if (prop in randomizeSchema) { 
@@ -294,11 +254,5 @@
     split.push(str.substring(startI, str.length))
     return split
   }
-  
-  // console.log(nestedSplit("", ","))
-  // console.log(nestedSplit("a,b,c", ","))
-  // console.log(nestedSplit("a b,c d,e f", ","))
-  // console.log(nestedSplit("[a,b,c],'d,e',f", ","))
-  // console.log(nestedSplit("[a,b,c],{x:d,y:e},\"f,g,h\"", ","))
-  // console.log(nestedSplit("a..'b..c'..d", ".."))
+
 })(AFRAME)
