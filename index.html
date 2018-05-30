@@ -7,28 +7,30 @@
   </head>
   <body>
     <a-scene background="color:black">
-      <template id="boxTemplate">
-        <a-box scale=".1 .1 .1"></a-box>
-      </template>
       <a-assets>
         <a-mixin id="label" text="align: center; width: 10" position="0 -3 0"></a-mixin>
+        <a-mixin id="random1" randomize="position:-2 -2 -5..2 2 -7; material.color:red..green; scale: 1 1 1|1.5 1.5 1.5|2 2 2;"></a-mixin>
+        <a-mixin id="random2" randomize="position:-2 -2 -2..2 2 2; rotation:0 0 0..360 360 360"></a-mixin>
       </a-assets>
-      <a-entity position="-3 1 -20" layout="type: box; margin: 6; columns: 5">
-        <a-entity randomize="_target:a-box; position:-2 -2 -5..2 2 -7; material.color:red..green; scale: 1 1 1|1.5 1.5 1.5|2 2 2;">
-          <a-box></a-box>
-          <a-box></a-box>
-          <a-box></a-box>
-          <a-text value="children color,size,scale" mixin="label"></a-text>
+      <template id="boxTemplate">
+        <a-box scale=".1 .1 .1" mixin="random2"></a-box>
+      </template>
+      <a-entity position="-10 1 -20" layout="type: box; margin: 6; columns: 5">
+        <a-entity>
+          <a-box mixin="random1"></a-box>
+          <a-box mixin="random1"></a-box>
+          <a-box mixin="random1"></a-box>
+          <a-text value="color,size,scale" mixin="label"></a-text>
         </a-entity>
         <a-entity>
-          <a-box randomize="rotation:0 0 0...360 360 360; width:1|2|3; height:1..2; color:blue|green|red|white"></a-box>
+          <a-box randomize="rotation:0 0 0...360 360 360; geometry.width:1|2|3; geometry.height:1..2; color:blue|green|red|white"></a-box>
           <a-text value="self color, rotation" mixin="label"></a-text>
         </a-entity>
         <a-entity>
           <a-box randomize="_seed:283748327; material.color:yellow..red"></a-box>
           <a-text value="self color, fixed seed" mixin="label"></a-text>
         </a-entity>
-        <a-entity id="adding" randomize="_target:a-box; position:-2 -2 -2..2 2 2; rotation:0 0 0..360 360 360">
+        <a-entity id="adding">
           <a-text value="position & rotate new children" mixin="label"></a-text>
         </a-entity>
       </a-entity>

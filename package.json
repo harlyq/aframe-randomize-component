@@ -1,6 +1,6 @@
 {
   "name": "aframe-randomize-component",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "System for randomizing attributes of A-Frame components",
   "files": [
     "aframe-randomize-component.js"

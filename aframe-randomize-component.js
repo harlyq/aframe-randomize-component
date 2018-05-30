@@ -3,8 +3,6 @@
   const RES = 4
   const identityFn = e => e
   
-  let uniqueId = 0
-  
   // note, cannot randomize these properties
   const randomizeSchema = {
     "_seed": {
@@ -13,16 +11,20 @@
       /*#if dev*/description: "random seed for the randomizer, set to -1 re-randomize each time",/*#endif*/
     },
 
-    "_target": {
-      default: "",
-      /*#if dev*/description: "selector for children to randomize. use an empty string for self (default), * for all children, or any other type of css selector",/*#endif*/
-    }
+    // "_target": {
+    //   default: "",
+    //   /*#if dev*/description: "selector for children to randomize. use an empty string for self (default), * for all children, or any other type of css selector",/*#endif*/
+    // }
   }
   
   AFRAME.registerComponent('randomize', {
     // This schema is dynamic, we will add custom properties in updateSchema
     schema: randomizeSchema,
     multiple: true,
+
+    // use dependencies for common built-ins to randomize otherwise <a-box randomize="material.color"> will not work because the
+    // randomize will be setup before the material exists
+    dependencies: ["geometry", "material"],
   
     init: function() {
       this.randNumber = this.randNumber.bind(this)
@@ -31,8 +33,8 @@
       this.randColor = this.randColor.bind(this)
       this.randSeed = 1234567 // current seed
       this.lastSeed = this.randSeed // last seed from data
-      this.processedElements = []
-      this.mutationObserver = new MutationObserver(this.childrenMutated.bind(this))
+      // this.processedElements = []
+      // this.mutationObserver = new MutationObserver(this.childrenMutated.bind(this))
     },
   
     updateSchema: function(newData) {
@@ -72,24 +74,24 @@
         this.lasSeed = this.randSeed
       }
 
-      this.processedElements = []
-      this.mutationObserver.disconnect() // will be connected later if we randomize children
+      // this.processedElements = []
+      // this.mutationObserver.disconnect() // will be connected later if we randomize children
 
-      if (this.data._target === "") {
+      // if (this.data._target === "") {
         this.randomizeEntity(this.el)
-      } else {
-        this.randomizeChildren()
-        this.mutationObserver.observe(this.el, {childList: true})
-      }
+      // } else {
+      //   this.randomizeChildren()
+      //   this.mutationObserver.observe(this.el, {childList: true})
+      // }
     },
 
-    childrenMutated: function(mutationsList) {
-      for (let mutation of mutationsList) {
-        if (mutation.type === "childList") {
-          this.randomizeChildren()
-        }
-      }
-    },
+    // childrenMutated: function(mutationsList) {
+    //   for (let mutation of mutationsList) {
+    //     if (mutation.type === "childList") {
+    //       this.randomizeChildren()
+    //     }
+    //   }
+    // },
   
     random: function() {
       if (this.randSeed < 0) {
@@ -104,20 +106,20 @@
       return this.random()*(max - min) + min
     },
   
-    randomizeChildren: function() {
-      const data = this.data
-      this.resetSelectsOnNextSelect = true
+    // randomizeChildren: function() {
+    //   const data = this.data
+    //   this.resetSelectsOnNextSelect = true
   
-      // TODO manage selects
-      for (let i = 0, n = this.el.children.length; i < n; i++) {
-        let entity = this.el.children[i]
+    //   // TODO manage selects
+    //   for (let i = 0, n = this.el.children.length; i < n; i++) {
+    //     let entity = this.el.children[i]
 
-        if (!this.processedElements.includes(entity) && entity.matches(data._target)) {
-          this.randomizeEntity(entity)
-          this.processedElements.push(entity)
-        }
-      }
-    },
+    //     if (!this.processedElements.includes(entity) && entity.matches(data._target)) {
+    //       this.randomizeEntity(entity)
+    //       this.processedElements.push(entity)
+    //     }
+    //   }
+    // },
 
     randomizeEntity: function(entity) {
       for (let prop in this.schema) {
@@ -144,6 +146,8 @@
           if (schemaProp.randFn) {
             const v = schemaProp.randFn(schemaProp.range[0], schemaProp.range[1])
             setProperty(entity, prop, v)
+          } else {
+            console.warn(`unable to randomize '${prop}', unknown property`)
           }
         }
       }
