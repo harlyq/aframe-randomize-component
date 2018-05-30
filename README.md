@@ -39,6 +39,6 @@ The randomizer is configured by dynamic properties, which are of the form ```pro
 ## Limitations
 when using a random range of colors, the random value is picked from the HSL space (not RGB).
 
-Propertiess with arrays or strings cannot be randomized with a range (..), but can be randomized with a choice (|).
+Propertiess with strings cannot be randomized with a range (..), but can be randomized with a choice (|).
 
 When modifying properties on a primitive it is best to use the component mapping rather than the property directly.  For example use **material.color** rather than **color**.

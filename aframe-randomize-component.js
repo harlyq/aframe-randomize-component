@@ -2,6 +2,7 @@
 (function (AFRAME) {
   const RES = 4
   const identityFn = e => e
+  const isNumber = x => Number(x) == x
   
   // note, cannot randomize these properties
   const randomizeSchema = {
@@ -31,7 +32,8 @@
     },
   
     updateSchema: function(newData) {
-      if (Object.keys(newData).every(x => isNaN(x))) {
+      // if there are numbers in the newData keys, then the attributes could not be parsed
+      if (Object.keys(newData).every(x => !isNumber(x))) {
         let newSchema = Object.assign({}, this.schema)
   
         for (let prop in newData) {
@@ -130,12 +132,28 @@
           prop.randFn = this.randColor
         }
       } else if (typeof x === "number") {
-        prop.range[0] = parseFloat(prop.range[0])
-        prop.range[1] = parseFloat(prop.range[1])
+        prop.range[0] = Number(prop.range[0])
+        prop.range[1] = Number(prop.range[1])
         prop.randFn = this.randNumber
       } else if (typeof x === "object") {
         if (Array.isArray(x)) {
-          // cannot create an array randomizer
+          prop.randFn = this.randArray
+          const minList = nestedSplit(prop.range[0], ",")
+          const maxList = nestedSplit(prop.range[1], ",")
+          if (minList.length !== maxList.length) {
+            console.error(`expected array ranges to be the same length: '${prop.range[0]}' vs '${prop.range[1]}'`)
+          }
+          prop.arrayFn = [] // represents the randFn for each range[0] and range[1] array element
+          prop.range[0] = []
+          prop.range[1] = []
+
+          for (let i = 0, n = minList.length; i < n; i++) {
+            let dummyProp = {range: [minList[i], maxList[i]]}
+            this.formatProperty(dummyProp, guessValueType(minList[i]))
+            prop.arrayFn[i] = dummyProp.randFn
+            prop.range[0][i] = dummyProp.range[0]
+            prop.range[1][i] = dummyProp.range[1]
+          }
         } else if ("x" in x && "y" in x && "z" in x && "w" in x) {
           prop.randFn = this.randVec4
         } else if ("x" in x && "y" in x && "z" in x) {
@@ -150,6 +168,10 @@
       }
     },
   
+    randArray: function(min, max) {
+      return this.arrayFn.map((x,i) => x(min[i], max[i])).join(",")
+    },
+
     // returns a value in the range [min, max) or [0, min) if there is no max
     randNumber: function(min, max) {
       return this.randomRange(min, max).toFixed(RES)
@@ -253,6 +275,25 @@
   
     split.push(str.substring(startI, str.length))
     return split
+  }
+
+  function guessValueType(x) {
+    const splits = x.split(" ")
+    const n = splits.length
+    if (n > 1 && splits.every(isNumber)) { // AFRAME.utils.coordinates.isCoordinates() return false for vec2 strings???!
+      return AFRAME.utils.coordinates.parse(x)
+    } else if (isNumber(x)) {
+      return Number(x)
+    } else {
+      // if x is not a valid color, then col will be set to the default (white)
+      // to determine whether the color was white, or just the default, we test again, but with a default of red
+      let col = new THREE.Color(1,1,1).set(x).getHexString()
+      if (col !== "ffffff" || col === new THREE.Color(0,1,0).set(x).getHexString()) {
+        return "#" + col
+      } else {
+        return x
+      }
+    }
   }
 
 })(AFRAME)

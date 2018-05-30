@@ -4,6 +4,12 @@
     <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-layout-component@4.2/dist/aframe-layout-component.min.js"></script>
     <script src="aframe-randomize-component.js"></script>
+    <script>
+      AFRAME.registerComponent("foo", {
+        schema: {fooArray: {type: "array"}},
+        update: function(oldData) { console.log("fooArray set to: ", this.data.fooArray) },
+      })
+    </script>
   </head>
   <body>
     <a-scene background="color:black">
@@ -27,7 +33,7 @@
           <a-text value="self color, rotation" mixin="label"></a-text>
         </a-entity>
         <a-entity>
-          <a-box randomize="_seed:283748327; material.color:yellow..red"></a-box>
+          <a-box foo randomize="_seed:283748327; material.color:yellow..red; foo.fooArray:1,red,3 3..4,#ff0,6 6"></a-box>
           <a-text value="self color, fixed seed" mixin="label"></a-text>
         </a-entity>
         <a-entity id="adding">
