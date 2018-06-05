@@ -10,7 +10,7 @@ The randomizer is configured by dynamic properties, which are of the form ```pro
 ```html
 <head>
   <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
-  <script src="https://unpkg.com/aframe-randomize-component/aframe-randomize-component.js"></script>
+  <script src="https://unpkg.com/aframe-randomize-component@^0.2.0/aframe-randomize-component.js"></script>
 </head>
 <body>
   <a-scene>

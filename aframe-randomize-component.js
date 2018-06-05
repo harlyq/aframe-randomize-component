@@ -270,6 +270,8 @@
           startI = i + 1
           k = 0
         }
+      } else {
+        k = 0 // reset the separator match
       }
     }
   
