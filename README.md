@@ -23,6 +23,8 @@ The randomizer is configured by dynamic properties, which are of the form ```pro
 | Property | Description | Default Value | Type |
 | -------- | ----------- | ------------- | ---- |
 |_seed|random seed for the randomizer, set to -1 re-randomize each time|-1|int|
+|\<component\>.\<attribute\>|set the attribute on a component with a value, a range (a..b) or a choice (a\|b\|c)|""|string|
+|\<component\>|set a component with a value, a range (a..b) or a choice (a\|b\|c)|""|string|
 
 ## Examples
 ```html
@@ -39,6 +41,6 @@ The randomizer is configured by dynamic properties, which are of the form ```pro
 ## Limitations
 when using a random range of colors, the random value is picked from the HSL space (not RGB).
 
-Propertiess with strings cannot be randomized with a range (..), but can be randomized with a choice (|).
+Properties with strings cannot be randomized with a range (..), but can be randomized with a choice (|).
 
 When modifying properties on a primitive it is best to use the component mapping rather than the property directly.  For example use **material.color** rather than **color**.
