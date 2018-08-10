@@ -1,21 +1,13 @@
-// Copyright 2018 harlyq, ISC license
+// Copyright 2018 harlyq, MIT license
 (function (AFRAME) {
   const RES = 4
-  const identityFn = e => e
   const isNumber = x => Number(x) == x
-  
-  // note, cannot randomize these properties
-  const randomizeSchema = {
-    "_seed": {
-      type: "int",
-      default: -1,
-      /*#if dev*/description: "random seed for the randomizer, set to -1 re-randomize each time",/*#endif*/
-    },
-  }
   
   AFRAME.registerComponent('randomize', {
     // This schema is dynamic, we will add custom properties in updateSchema
-    schema: randomizeSchema,
+    schema: {
+      "seed": { default: -1 },
+    },
     multiple: true,
 
     // use dependencies for common built-ins to randomize otherwise <a-box randomize="material.color"> will not work because the
@@ -27,65 +19,65 @@
       this.randVec2 = this.randVec2.bind(this)
       this.randVec3 = this.randVec3.bind(this)
       this.randColor = this.randColor.bind(this)
-      this.randSeed = 1234567 // current seed
-      this.lastSeed = this.randSeed // last seed from data
+      this.seed = 0.1232347 // current seed
     },
   
     updateSchema: function(newData) {
       // if there are numbers in the newData keys, then the attributes could not be parsed
-      if (Object.keys(newData).every(x => !isNumber(x))) {
-        let newSchema = Object.assign({}, this.schema)
-  
-        for (let prop in newData) {
-          if (!(prop in newSchema)) { // add new properties, ignore the rest
-            const propData = newData[prop]
-            const options = toOptions(propData)
-            const range = toRange(propData)
-  
-            if (options === undefined && range === undefined) {
-              console.error(`unable to parse property '${prop}', expecting .. or | in: '${propData}'`)
-            } else {
-              newSchema[prop] = {
-                type: "string",
-                options,
-                range,
-                parse: identityFn,
-              }
+      const originalSchema = AFRAME.components[this.name].schema
+      let newSchema = {}
+
+      for (let prop in newData) {
+        if (!(prop in originalSchema)) { // add new properties, ignore the rest
+          const propData = newData[prop].trim()
+          const range = toRange(propData)
+          const options = range ? undefined : toOptions(propData)
+
+          if (options === undefined && range === undefined) {
+            console.error(`unable to parse property '${prop}', expecting .. or | in: '${propData}'`)
+          } else {
+            newSchema[prop] = {
+              type: "string",
+              options,
+              range,
             }
           }
         }
-  
-        this.schema = newSchema
-      } else {
-        console.error(`cannot read properties, expecting <property>:<value>; '${Object.values(newData).join("")}'`)
+      }
+
+      if (Object.keys(newSchema).length > 0) {
+        this.extendSchema(newSchema)
       }
     },
   
     update: function(oldData) {
-      if (this.data._seed !== this.lastSeed) {
-        this.randSeed = this.data._seed
-        this.lasSeed = this.randSeed
+      const data = this.data
+
+      if (data.seed !== oldData.seed) {
+        this.seed = data.seed
       }
 
       this.randomizeEntity(this.el)
     },
 
-    random: function() {
-      if (this.randSeed < 0) {
+    pseudoRandom: function() {
+      if (this.seed < 0) {
         return Math.random()
       } else {
-        this.randSeed = (1664525*this.randSeed + 1013904223) % 0xffffffff
-        return this.randSeed/0xffffffff
+        this.seed = (1664525*this.seed + 1013904223) % 0xffffffff
+        return this.seed/0xffffffff
       }
     },
   
     randomRange: function(min, max) {
-      return this.random()*(max - min) + min
+      return this.pseudoRandom()*(max - min) + min
     },
   
     randomizeEntity: function(entity) {
+      const originalSchema = AFRAME.components[this.name].schema
+
       for (let prop in this.schema) {
-        if (prop in randomizeSchema) { 
+        if (prop in originalSchema) { 
           continue  // cannot randomize the randomizer's base properties
         }
 
@@ -94,7 +86,7 @@
         if (schemaProp.options) {
           // multiple options, pick a random one
           const options = schemaProp.options
-          const v = options[~~(options.length*this.random())]
+          const v = options[~~(options.length*this.pseudoRandom())]
           setProperty(entity, prop, v)
 
         } else if (schemaProp.range) {
@@ -123,12 +115,10 @@
         // do nothing
       } else if (typeof x === "string") {
         if (x.length > 0 && x[0] === "#") {
-          let minHSL = {}
-          let maxHSL = {}
-          new THREE.Color(prop.range[0].toLowerCase()).getHSL(minHSL)
-          new THREE.Color(prop.range[1].toLowerCase()).getHSL(maxHSL)
-          prop.range[0] = minHSL
-          prop.range[1] = maxHSL
+          let minRGB = new THREE.Color(prop.range[0].toLowerCase())
+          let maxRGB = new THREE.Color(prop.range[1].toLowerCase())
+          prop.range[0] = minRGB
+          prop.range[1] = maxRGB
           prop.randFn = this.randColor
         }
       } else if (typeof x === "number") {
@@ -148,7 +138,7 @@
           prop.range[1] = []
 
           for (let i = 0, n = minList.length; i < n; i++) {
-            let dummyProp = {range: [minList[i], maxList[i]]}
+            let dummyProp = { range: [minList[i], maxList[i]] }
             this.formatProperty(dummyProp, guessValueType(minList[i]))
             prop.arrayFn[i] = dummyProp.randFn
             prop.range[0][i] = dummyProp.range[0]
@@ -189,27 +179,29 @@
       return this.randomRange(min.x, max.x).toFixed(RES) + " " + this.randomRange(min.y, max.y).toFixed(RES)
     },
   
-    // randomize in HSL space
+    // randomize in RGB space
     randColor: (function() {
       let tempColor = new THREE.Color()
 
       return function(min, max) {
-        const h = this.randomRange(min.h, max.h)
-        const s = this.randomRange(min.s, max.s)
-        const l = this.randomRange(min.l, max.l)        
-        return "#" + tempColor.setHSL(h, s, l).getHexString()
+        const r = this.randomRange(min.r, max.r)
+        const g = this.randomRange(min.g, max.g)
+        const b = this.randomRange(min.b, max.b)        
+        return "#" + tempColor.setRGB(r, g, b).getHexString()
       }
     })(),
   })
   
   function toRange(str) {
+    if (str === "") { return undefined }
     const split = nestedSplit(str, "..")
     return split.length > 1 ? split : undefined
   }
   
   function toOptions(str) {
+    if (str === "") { return undefined }
     const split = nestedSplit(str, "|")
-    return split.length > 1 ? split : undefined
+    return split // option may be one element
   }
   
   function getProperty(entity, prop) {

@@ -10,7 +10,7 @@ The randomizer is configured by dynamic properties, which are of the form ```pro
 ```html
 <head>
   <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
-  <script src="https://unpkg.com/aframe-randomize-component@^0.2.0/aframe-randomize-component.js"></script>
+  <script src="https://unpkg.com/aframe-randomize-component@^0.3.0/aframe-randomize-component.js"></script>
 </head>
 <body>
   <a-scene>
@@ -22,7 +22,7 @@ The randomizer is configured by dynamic properties, which are of the form ```pro
 ## Properties
 | Property | Description | Default Value | Type |
 | -------- | ----------- | ------------- | ---- |
-|_seed|random seed for the randomizer, set to -1 re-randomize each time|-1|int|
+|seed|random seed for the randomizer, set to -1 re-randomize each time|-1|number|
 |\<component\>.\<attribute\>|set the attribute on a component with a value, a range (a..b) or a choice (a\|b\|c)|""|string|
 |\<component\>|set a component with a value, a range (a..b) or a choice (a\|b\|c)|""|string|
 
@@ -34,7 +34,7 @@ The randomizer is configured by dynamic properties, which are of the form ```pro
   // random color from black to white
   <a-entity randomize="material.color:black..white"></a-entity>
 
-  // set the material color to red, green or blue
+  // set the material color to red, #0f0 or #0000ff
   <a-entity randomize="material.color:red|#0f0|#0000ff"></a-entity>
 ```
 
