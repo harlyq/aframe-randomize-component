@@ -2,7 +2,6 @@
 <html>
   <head>
     <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
-    <script src="https://unpkg.com/aframe-layout-component@4.2/dist/aframe-layout-component.min.js"></script>
     <script src="aframe-randomize-component.js"></script>
     <script>
       AFRAME.registerComponent("foo-bar", {
@@ -16,40 +15,40 @@
       <a-assets>
         <a-mixin id="label" text="align: center; width: 10" position="0 -3 0"></a-mixin>
         <a-mixin id="random1" randomize="position:-2 -2 2..2 2 -2; material.color:#444..white; scale: 1 1 1|1.5 1.5 1.5|2 2 2;"></a-mixin>
-        <a-mixin id="random2" randomize="position:-2 -2 -2..2 2 2; rotation:0 0 0..360 360 360"></a-mixin>
+        <a-mixin id="random2" randomize="position:-2 -2 -2..2 2 2; rotation:0 0 0..360 360 360; material.color:black..white"></a-mixin>
       </a-assets>
       <template id="boxTemplate">
         <a-box scale=".1 .1 .1" mixin="random2"></a-box>
       </template>
-      <a-entity position="-10 1 -20" layout="type: box; margin: 6; columns: 5">
-        <a-entity>
+      <a-entity position="0 0 -20">
+        <a-entity position="-10 0 0">
           <a-box mixin="random1"></a-box>
           <a-box mixin="random1"></a-box>
           <a-box mixin="random1"></a-box>
           <a-text value="color, position, scale" mixin="label"></a-text>
         </a-entity>
-        <a-entity>
+        <a-entity position="-5 0 0">
           <a-box randomize="rotation:0 0 0...360 360 360; geometry.width:1|2|3; geometry.height:1..2; color:blue|green|red|white"></a-box>
           <a-text value="color, rotation" mixin="label"></a-text>
         </a-entity>
-        <a-entity>
+        <a-entity position="0 0 0">
           <a-box foo-bar randomize="seed:0.5; material.color:yellow..red; foo-bar.fooArray:1,red,3 3..4,#ff0,6 6"></a-box>
           <a-text value="color, fixed seed" mixin="label"></a-text>
         </a-entity>
-        <a-entity id="adding">
+        <a-entity id="adding" position="5 0 0">
           <a-text value="position & rotate new children" mixin="label"></a-text>
+          <script>
+            let boxTemplate = document.getElementById("boxTemplate")
+            let adding = document.getElementById("adding")
+            function spawn() {
+              let clone = document.importNode(boxTemplate.content, true)
+              adding.appendChild(clone)
+              setTimeout(spawn, 2000)
+            }
+            spawn()
+          </script>
         </a-entity>
       </a-entity>
     </a-scene>
-    <script>
-      let boxTemplate = document.getElementById("boxTemplate")
-      let adding = document.getElementById("adding")
-      function spawn() {
-        let clone = document.importNode(boxTemplate.content, true)
-        adding.appendChild(clone)
-        setTimeout(spawn, 2000)
-      }
-      spawn()
-    </script>
   </body>
 </html>
